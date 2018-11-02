@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+/*
+本 gRPC 接口为测试用接口 服务器地址请跟代理商索取(每个人独立等服务器IP)
+本接口功能比较单一，只能满足初步测试
+正式版接口需要需求方提出要求，供应方来根据要求制定相应的接口
+*/
+
+message Status {
+    //如果为0则表示成功 其它状态皆为错误
+    int32 Code = 1;
+}
+message Device {
+    bytes ID = 1;
+    //序列号
+    string SN = 2;
+    //IMEI
+    string IMEI = 3;
+    //UDID
+    string UDID = 4;
+    //CHIPID
+    uint64 ChipID = 5;
+    //产品型号 (iPhone6,2)
+    string Product = 6;
+    //状态
+    string Status = 7;
+}
+
+message Account {
+    bytes ID = 1;
+    string UserName = 2;
+    string Password = 3;
+    //状态
+    string Status = 7;
+}
+
+//只是单纯添加发送号码使用
+message Message {
+    //发送号码[只支持中国手机号]
+    repeated uint64 Numbers = 2;
+    string Content = 3;
+}
+
+message PhoneNumber {
+    bytes ID = 1;
+    uint64 Number = 2;
+    //状态
+    string Status = 7;
+}
+
+//查询中等From表示跳过多少条记录Count表示这次查询需要取回多少条记录
+//Total返回表示根据此次查询条件,总共有多少条记录符合条件
+
+message QDevice {
+    uint32 From = 1;
+    uint32 Count = 2;
+    uint32 Status = 3;
+    repeated bytes ID = 4;
+}
+
+message RDevice{
+    uint32 Total = 1;
+    repeated Device Devices = 2;
+}
+
+message QAccount {
+    uint32 From = 1;
+    uint32 Count = 2;
+    uint32 Status = 3;
+    repeated bytes ID = 4;
+}
+
+message RAccount{
+    uint32 Total = 1;
+    repeated Account Accounts = 2;
+}
+
+message QNumber {
+    uint32 From = 1;
+    uint32 Count = 2;
+    uint32 Status = 3;
+    repeated bytes ID = 4;
+}
+
+message RNumber{
+    uint32 Total = 1;
+    repeated PhoneNumber Numbers = 2;
+}
+
+message EDevice{
+    //Type 分为: 1.修改 2.删除ID 3.全部删除
+    uint32 Type = 1;
+    repeated Device Devices = 2;
+}
+
+message EAccount{
+    //Type 分为: 1.修改 2.删除ID 3.全部删除
+    uint32 Type = 1;
+    repeated Account Accounts = 2;
+}
+
+message ENumber{
+    //Type 分为: 1.修改 2.删除ID 3.全部删除
+    uint32 Type = 1;
+    repeated PhoneNumber Numbers = 2;
+}
+
+service IMService {
+  rpc InsertDevice(Device) returns (Status){}
+  rpc InsertAccount(Account) returns (Status){}
+  //这里等Status返回值表示导入成功等个数,所以原则上应该大于0
+  rpc InsertMessage(Message) returns (Status){}
+
+  rpc QueryDevice(QDevice) returns (RDevice){}
+  rpc QueryAccount(QAccount) returns (RAccount){}
+  rpc QueryNumber(QNumber) returns (RNumber){}
+
+  rpc EditDevice(EDevice) returns (Status){}
+  rpc EditAccount(EAccount) returns (Status){}
+  rpc EditNumber(ENumber) returns (Status){}
+}
