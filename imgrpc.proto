@@ -6,10 +6,15 @@ syntax = "proto3";
 正式版接口需要需求方提出要求，供应方来根据要求制定相应的接口
 */
 
+//通用状态返回
 message Status {
-    //如果为0则表示成功 其它状态皆为错误
+    //如果为0则表示成功 其它状态皆为错误(特殊情况除外)
     int32 Code = 1;
 }
+
+//ID 为 GUID 表示此记录的唯一值
+
+//机器码信息【测试接口只支持iOS手机码】
 message Device {
     bytes ID = 1;
     //序列号
@@ -25,7 +30,7 @@ message Device {
     //状态
     string Status = 7;
 }
-
+//账号
 message Account {
     bytes ID = 1;
     string UserName = 2;
@@ -33,31 +38,35 @@ message Account {
     //状态
     string Status = 7;
 }
-
-//只是单纯添加发送号码使用
-message Message {
-    //发送号码[只支持中国手机号]
-    repeated uint64 Numbers = 2;
-    string Content = 3;
-}
-
-message PhoneNumber {
+//号码
+message Number {
     bytes ID = 1;
-    uint64 Number = 2;
+    uint64 Value = 2;
     //状态
     string Status = 7;
 }
+//文案
+message Message {
+    bytes ID = 1;
+    string Text = 2;
+    string Status = 7;
+}
 
-//查询中等From表示跳过多少条记录Count表示这次查询需要取回多少条记录
-//Total返回表示根据此次查询条件,总共有多少条记录符合条件
+//手机号码(因为手机号码都是单次导入大量数据)
+message Numbers {
+    //发送号码[只支持中国手机号]
+    repeated uint64 Numbers = 1;
+}
+
+//查询中 From 表示跳过多少条记录 Count 表示这次查询需要取回多少条记录
+//Total 返回表示根据此次查询条件,总共有多少条记录符合条件
 
 message QDevice {
     uint32 From = 1;
     uint32 Count = 2;
-    uint32 Status = 3;
+    string Status = 3;
     repeated bytes ID = 4;
 }
-
 message RDevice{
     uint32 Total = 1;
     repeated Device Devices = 2;
@@ -66,56 +75,69 @@ message RDevice{
 message QAccount {
     uint32 From = 1;
     uint32 Count = 2;
-    uint32 Status = 3;
+    string Status = 3;
     repeated bytes ID = 4;
 }
-
 message RAccount{
     uint32 Total = 1;
     repeated Account Accounts = 2;
 }
 
+message QMessage {
+    uint32 From = 1;
+    uint32 Count = 2;
+    string Status = 3;
+    repeated bytes ID = 4;
+}
+message RMessage{
+    uint32 Total = 1;
+    repeated Message Messages = 2;
+}
+
 message QNumber {
     uint32 From = 1;
     uint32 Count = 2;
-    uint32 Status = 3;
+    string Status = 3;
     repeated bytes ID = 4;
 }
-
 message RNumber{
     uint32 Total = 1;
-    repeated PhoneNumber Numbers = 2;
+    repeated Number Numbers = 2;
 }
 
+//Type 分为: 1.修改 2.删除ID 3.全部删除
+
 message EDevice{
-    //Type 分为: 1.修改 2.删除ID 3.全部删除
     uint32 Type = 1;
     repeated Device Devices = 2;
 }
-
 message EAccount{
-    //Type 分为: 1.修改 2.删除ID 3.全部删除
     uint32 Type = 1;
     repeated Account Accounts = 2;
 }
-
-message ENumber{
-    //Type 分为: 1.修改 2.删除ID 3.全部删除
+message EMessage{
     uint32 Type = 1;
-    repeated PhoneNumber Numbers = 2;
+    repeated Message Messages = 2;
+}
+message ENumber{
+    uint32 Type = 1;
+    repeated Number Numbers = 2;
 }
 
 service IMService {
   rpc InsertDevice(Device) returns (Status){}
   rpc InsertAccount(Account) returns (Status){}
-  //这里等Status返回值表示导入成功等个数,所以原则上应该大于0
   rpc InsertMessage(Message) returns (Status){}
+  //这里等Status返回值表示导入成功等个数,所以原则上应该大于0
+  rpc InsertNumber(Numbers) returns (Status){}
 
   rpc QueryDevice(QDevice) returns (RDevice){}
   rpc QueryAccount(QAccount) returns (RAccount){}
+  rpc QueryMessage(QMessage) returns (RMessage){}
   rpc QueryNumber(QNumber) returns (RNumber){}
 
   rpc EditDevice(EDevice) returns (Status){}
   rpc EditAccount(EAccount) returns (Status){}
+  rpc EditMessage(EMessage) returns (Status){}
   rpc EditNumber(ENumber) returns (Status){}
 }
