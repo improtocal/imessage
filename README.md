@@ -1,6 +1,8 @@
 # imessage
 iMessage Protocal
 
+# mailto:improtocal@gmail.com
+
 iMessage 发送对接协议(gRPC版本)
 
 使用此协议对接iMessage发送服务器来提供测试iMessage发送服务
