@@ -14,6 +14,20 @@ message Status {
 
 //ID 为 GUID 表示此记录的唯一值
 
+//机器码信息
+enum DStatus {
+    //未使用
+    DUNUSED = 0;
+    //正在使用
+    DUSING = 1;
+    //机器码处理错误(ID锁或无法激活)
+    DERROR = 2;
+    //已经绑定成功
+    DFINISH = 3;
+    //做[Query]时候使用
+    DQUERY = 10;
+}
+
 //机器码信息【测试接口只支持iOS手机码】
 message Device {
     bytes ID = 1;
@@ -28,7 +42,22 @@ message Device {
     //产品型号 (iPhone6,2)
     string Product = 6;
     //状态
-    string Status = 7;
+    DStatus Status = 7;
+}
+//机器码信息
+enum AStatus {
+    //未使用
+    AUNUSED = 0;
+    //登陆中
+    AUSING = 2;
+    //密码错误
+    AERRORP = 3;
+    //未知错误
+    AERRORO = 4;
+    //处理成功
+    AFINISH = 5;
+    //做[Query]时候使用
+    AQUERY = 10;
 }
 //账号
 message Account {
@@ -36,20 +65,40 @@ message Account {
     string UserName = 2;
     string Password = 3;
     //状态
-    string Status = 7;
+    AStatus Status = 7;
+}
+enum NStatus {
+    //等待发送
+    NUNUSED = 0;
+    //发送中
+    NSENDING = 2;
+    //发送失败
+    NFAILD = 3;
+    //发送成功
+    NSUCCESS = 4;
+    //做[Query]时候使用
+    NQUERY = 10;
 }
 //号码
 message Number {
     bytes ID = 1;
     uint64 Value = 2;
     //状态
-    string Status = 7;
+    NStatus Status = 7;
+}
+enum MStatus {
+    //关闭发送
+    MUNUSED = 0;
+    //开启发送
+    MSENDING = 1;
+    //做[Query]时候使用
+    MQUERY = 10;
 }
 //文案
 message Message {
     bytes ID = 1;
     string Text = 2;
-    string Status = 7;
+    MStatus Status = 7;
 }
 
 //手机号码(因为手机号码都是单次导入大量数据)
@@ -60,11 +109,15 @@ message Numbers {
 
 //查询中 From 表示跳过多少条记录 Count 表示这次查询需要取回多少条记录
 //Total 返回表示根据此次查询条件,总共有多少条记录符合条件
+//比如 From 40 Count 20 表示查询当前条件下 从第 40 条开始之后的 20 条数据
+//如果设置 Status 为非 QUERY 值, 则表示查询特定 Status 值的数据
+//如果设置 Status 为 QUERY 则表示查询对应 ID 的数据
+//如果ID为空 则表示查询所有数据(无 where 条件查询)
 
 message QDevice {
     uint32 From = 1;
     uint32 Count = 2;
-    string Status = 3;
+    DStatus Status = 3;
     repeated bytes ID = 4;
 }
 message RDevice{
@@ -75,7 +128,7 @@ message RDevice{
 message QAccount {
     uint32 From = 1;
     uint32 Count = 2;
-    string Status = 3;
+    AStatus Status = 3;
     repeated bytes ID = 4;
 }
 message RAccount{
@@ -86,7 +139,7 @@ message RAccount{
 message QMessage {
     uint32 From = 1;
     uint32 Count = 2;
-    string Status = 3;
+    MStatus Status = 3;
     repeated bytes ID = 4;
 }
 message RMessage{
@@ -97,7 +150,7 @@ message RMessage{
 message QNumber {
     uint32 From = 1;
     uint32 Count = 2;
-    string Status = 3;
+    NStatus Status = 3;
     repeated bytes ID = 4;
 }
 message RNumber{
@@ -106,6 +159,8 @@ message RNumber{
 }
 
 //Type 分为: 1.修改 2.删除ID 3.全部删除
+//目前之后 Message 支持修改 其它之后删除
+//Message 只可以修改 Status
 
 message EDevice{
     uint32 Type = 1;
@@ -125,19 +180,31 @@ message ENumber{
 }
 
 service IMService {
-  rpc InsertDevice(Device) returns (Status){}
-  rpc InsertAccount(Account) returns (Status){}
-  rpc InsertMessage(Message) returns (Status){}
-  //这里等Status返回值表示导入成功等个数,所以原则上应该大于0
-  rpc InsertNumber(Numbers) returns (Status){}
+    //增加 机器码
+    rpc InsertDevice(Device) returns (Status){}
+    //增加 账号
+    rpc InsertAccount(Account) returns (Status){}
+    //增加 内容
+    rpc InsertMessage(Message) returns (Status){}
+    //增加 手机号
+    //这里等Status返回值表示导入成功等个数,所以原则上应该大于0
+    rpc InsertNumber(Numbers) returns (Status){}
 
-  rpc QueryDevice(QDevice) returns (RDevice){}
-  rpc QueryAccount(QAccount) returns (RAccount){}
-  rpc QueryMessage(QMessage) returns (RMessage){}
-  rpc QueryNumber(QNumber) returns (RNumber){}
+    //查询 机器码
+    rpc QueryDevice(QDevice) returns (RDevice){}
+    //查询 账号
+    rpc QueryAccount(QAccount) returns (RAccount){}
+    //查询 内容
+    rpc QueryMessage(QMessage) returns (RMessage){}
+    //查询 手机号
+    rpc QueryNumber(QNumber) returns (RNumber){}
 
-  rpc EditDevice(EDevice) returns (Status){}
-  rpc EditAccount(EAccount) returns (Status){}
-  rpc EditMessage(EMessage) returns (Status){}
-  rpc EditNumber(ENumber) returns (Status){}
+    //编辑 机器码
+    rpc EditDevice(EDevice) returns (Status){}
+    //编辑 账号
+    rpc EditAccount(EAccount) returns (Status){}
+    //编辑 内容
+    rpc EditMessage(EMessage) returns (Status){}
+    //编辑 手机号
+    rpc EditNumber(ENumber) returns (Status){}
 }
