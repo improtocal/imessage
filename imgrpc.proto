@@ -13,6 +13,9 @@ message Status {
 }
 
 //ID 为 GUID 表示此记录的唯一值
+//当插入内容时,请不要设置ID值(设置了也无用) ID值只有在查询的时候才会返回
+//在查询,编辑,删除时候才有用
+//同理 Status 也是一样不需要设置 (*Message的Status在插入时候需要设置*)
 
 //机器码信息
 enum DStatus {
@@ -37,9 +40,9 @@ message Device {
     string IMEI = 3;
     //UDID
     string UDID = 4;
-    //CHIPID
+    //CHIPID 也叫 ECID
     uint64 ChipID = 5;
-    //产品型号 (iPhone6,2)
+    //产品型号 例: iPhone6,2
     string Product = 6;
     //状态
     DStatus Status = 7;
