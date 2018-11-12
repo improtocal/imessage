@@ -1,4 +1,4 @@
-# imessage
+# iMessage
 iMessage Protocal
 
 # mailto:improtocal@gmail.com
